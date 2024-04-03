@@ -2,21 +2,42 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 
 const laundrySchema = new mongoose.Schema({
-  name: {
+  laundryName: {
     type: String,
     required: [true, "Please enter the Laundry name"],
   },
-  reg_no: {
+  laundryOwner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "LaundryOwner",
+  },
+  area: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "Area",
+  },
+  regNo: {
     type: String,
     required: [true, "Please enter the Business Reg No"],
   },
-  area: {
+
+  ratings: {
     type: String,
-    required: [true, "Please enter the Business area"],
+    deffault: 0,
   },
-  services: {
-    type: String,
-    required: true,
+  selectedServices: [
+    {
+      type: String,
+      required: [true, "Please select service catergory"],
+    },
+  ],
+  numOfReviews: {
+    type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
   },
 });
 

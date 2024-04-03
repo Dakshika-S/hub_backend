@@ -8,18 +8,18 @@ const orderSchema = new mongoose.Schema({
       required: true,
     },
     district: {
-      type: String,
-      requied: true,
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
     },
     area: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     postalCode: {
       type: String,
       required: true,
     },
-    phoneNo: {
+    contactNo: {
       type: String,
       required: true,
     },
@@ -29,9 +29,9 @@ const orderSchema = new mongoose.Schema({
     required: true,
     ref: "Customer",
   },
-  serviceType: {
-    type: String,
-    required: true,
+  selectedPackage: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: [true, "Please select a package"],
   },
   Items: {
     type: String,
@@ -51,7 +51,7 @@ const orderSchema = new mongoose.Schema({
     required: true,
     default: 0.0,
   },
-  shippingPrice: {
+  pickupandDeliveryCharge: {
     type: Number,
     required: true,
     default: 0.0,
@@ -67,13 +67,13 @@ const orderSchema = new mongoose.Schema({
   pickupDate: {
     type: Date,
   },
-  DeliverDate: {
+  deliverDate: {
     type: Date,
   },
   orderStatus: {
     type: String,
     required: true,
-    Default: "Processing",
+    default: "Processing",
   },
   createdAt: {
     type: Date,
