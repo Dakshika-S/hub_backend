@@ -27,7 +27,7 @@ const laundrySchema = new mongoose.Schema({
   },
   selectedServices: [
     {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: [true, "Please select service catergory"],
     },
   ],
