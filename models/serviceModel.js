@@ -5,6 +5,7 @@ const serviceSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please enter the service name "],
+    unique: true,
   },
   itemsInfo: {
     items: [
@@ -14,7 +15,7 @@ const serviceSchema = new mongoose.Schema({
       },
     ],
     unitInfo: {
-      unitName: {
+      unit: {
         type: String,
         required: [true, " select the unit type"],
       },

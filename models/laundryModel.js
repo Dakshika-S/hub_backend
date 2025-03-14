@@ -19,6 +19,7 @@ const laundrySchema = new mongoose.Schema({
   regNo: {
     type: String,
     required: [true, "Please enter the Business Reg No"],
+    unique: true,
   },
 
   ratings: {

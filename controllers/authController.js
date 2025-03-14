@@ -12,12 +12,13 @@ const sendToken = require("../utils/jwt");
 const sendEmail = require("../utils/email");
 const crypto = require("crypto");
 const { log } = require("console");
+const jwt = require("jsonwebtoken");
 
 //register Customer -/api/v1/customer/register
 exports.registerCustomer = asyncErrorHandler(async (req, res, next) => {
   console.log("registeruser");
   // try {
-  const { name, email, password, address, contactNo } = req.body;
+  const { name, email, password, address, contactNo, role } = req.body;
 
   const user = await Customer.create({
     name,
@@ -25,6 +26,7 @@ exports.registerCustomer = asyncErrorHandler(async (req, res, next) => {
     password,
     address,
     contactNo,
+    role,
   });
   const token = user.getJwtToken();
   res.status(201).json({
@@ -39,7 +41,7 @@ exports.registerCustomer = asyncErrorHandler(async (req, res, next) => {
 
 //register Admin -/api/v1/admin/register
 exports.registerAdmin = asyncErrorHandler(async (req, res, next) => {
-  const { name, email, password, address, contactNo } = req.body;
+  const { name, email, password, address, contactNo, role } = req.body;
 
   const user = await Admin.create({
     name,
@@ -47,6 +49,7 @@ exports.registerAdmin = asyncErrorHandler(async (req, res, next) => {
     password,
     address,
     contactNo,
+    role,
   });
   const token = user.getJwtToken();
 
@@ -65,6 +68,7 @@ exports.registerLaundryOwner = asyncErrorHandler(async (req, res, next) => {
     password,
     address,
     contactNo,
+    role,
     laundryName,
     regNo,
     area,
@@ -77,6 +81,7 @@ exports.registerLaundryOwner = asyncErrorHandler(async (req, res, next) => {
     password,
     address,
     contactNo,
+    role,
   });
 
   const laundry = await Laundry.create({
@@ -97,7 +102,8 @@ exports.registerLaundryOwner = asyncErrorHandler(async (req, res, next) => {
 
 //register staff -/api/v1/staff/register
 exports.registerStaff = asyncErrorHandler(async (req, res, next) => {
-  const { name, email, password, address, contactNo, sNic, laundry } = req.body;
+  const { name, email, password, address, contactNo, role, sNic, laundry } =
+    req.body;
 
   const user = await Staff.create({
     name,
@@ -105,6 +111,7 @@ exports.registerStaff = asyncErrorHandler(async (req, res, next) => {
     password,
     address,
     contactNo,
+    role,
     sNic,
     laundry,
   });
@@ -120,25 +127,26 @@ exports.registerStaff = asyncErrorHandler(async (req, res, next) => {
 //login all - /api/v1/login
 exports.logIn = asyncErrorHandler(async (req, res, next) => {
   const { email, password, type } = req.body;
+  console.log(email, password, type);
   let user;
   if (!email || !password) {
     return next(new CustomError("Please enter email and password", 400)); //400- not providing
   }
   if (type === "admin") {
-    user = await Admin.findOne({ email }).select("+password");
+    user = await Admin.findOne({ email });
   }
   if (type === "customer") {
-    user = await Customer.findOne({ email }).select("+password");
+    user = await Customer.findOne({ email });
   }
   if (type === "staff") {
-    user = await Staff.findOne({ email }).select("+password");
+    user = await Staff.findOne({ email });
   }
   if (type === "laundryOwner") {
-    user = await LaundryOwner.findOne({ email }).select("+password");
+    user = await LaundryOwner.findOne({ email });
   }
-
+  console.log(user);
   if (!user) {
-    return next(new CustomError("invalid email or password", 401));
+    return next(new CustomError("user not found", 401));
   }
 
   if (!(await user.isValidPassword(password))) {
@@ -286,19 +294,36 @@ exports.resetPassword = asyncErrorHandler(async (req, res, next) => {
 
 //Get User Profile - /api/v1/myprofile
 exports.getUserProfile = asyncErrorHandler(async (req, res, next) => {
-  const type = req.params.type;
-  if (type === "admin") {
+  // const type = req.params.type;
+  // if (type === "admin") {
+  //   user = await Admin.findById(req.user.id);
+  // }
+  // if (type === "customer") {
+  //   user = await Customer.findById(req.user.id);
+  // }
+  // if (type === "staff") {
+  //   user = await Staff.findById(req.user.id);
+  // }
+  // if (type === "laundryOwner") {
+  //   user = await LaundryOwner.findById(req.user.id);
+  // }
+  //let user;
+  let role = req.user.role;
+  let user;
+  console.log(user, role, req.user.id);
+  if (role === "admin") {
     user = await Admin.findById(req.user.id);
   }
-  if (type === "customer") {
+  if (role === "customer") {
     user = await Customer.findById(req.user.id);
   }
-  if (type === "staff") {
+  if (role === "staff") {
     user = await Staff.findById(req.user.id);
   }
-  if (type === "laundryOwner") {
+  if (role === "laundryOwner") {
     user = await LaundryOwner.findById(req.user.id);
   }
+  console.log(user, role);
   if (!user) {
     return next(new CustomError("user not found", 404));
   }
@@ -308,25 +333,33 @@ exports.getUserProfile = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-//change password - /api/v1/password/change/:type
+//change password - /api/v1/password/change/
 exports.changePassword = asyncErrorHandler(async (req, res, next) => {
+  const { token } = req.cookies;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const role = decoded.role;
+  //  let role = req.user.role;
   let user;
-  let type = req.params.type;
-
-  if (type === "admin") {
-    user = await Admin.findById(req.user.id).select("+password");
+  if (role === "admin") {
+    user = await Admin.findById(req.user.id);
   }
-  if (type === "customer") {
-    user = await Admin.findById(req.user.id).select("+password");
+  if (role === "customer") {
+    user = await Customer.findById(req.user.id);
   }
-  if (type === "staff") {
-    user = await Admin.findById(req.user.id).select("+password");
+  if (role === "staff") {
+    user = await Staff.findById(req.user.id);
   }
-  if (type === "laundryOwner") {
-    user = await Admin.findById(req.user.id).select("+password");
+  if (role === "laundryOwner") {
+    user = await LaundryOwner.findById(req.user.id);
   }
-
-  //chack old password
+  console.log(
+    "body oldpassword: ",
+    req.body.oldPassword,
+    "body new password: ",
+    req.body.password
+  );
+  console.log(role);
+  //check old password
   if (!(await user.isValidPassword(req.body.oldPassword))) {
     return next(new CustomError("Old password is incorrect", 401));
   }

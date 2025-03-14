@@ -48,7 +48,7 @@ const baseUserSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter the password"],
     minlength: [6, "password cannot exceed 6 characters"],
-    select: false, //wont retrive in all conditon except .select('+password');
+    // select: false, //wont retrive in all conditon except .select('+password');
   },
   avatar: {
     type: String,
@@ -66,6 +66,10 @@ const baseUserSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  role: {
+    type: String,
+    required: [true, "Please select the user type"],
   },
 });
 
@@ -102,9 +106,9 @@ customerSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
   }
-  // console.log("hashing password", this.email);
+  //console.log("hashing password", this.email);
   this.password = await bcrypt.hash(this.password, 10);
-  // console.log("hashed password", this.email);
+  //console.log("hashed password", this.email);
 });
 adminSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
@@ -133,28 +137,30 @@ staffSchema.pre("save", async function (next) {
 
 //JWT token generation
 customerSchema.methods.getJwtToken = function () {
-  return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this.id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_TIME,
   });
 };
 adminSchema.methods.getJwtToken = function () {
-  return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this.id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_TIME,
   });
 };
 laundryOwnerSchema.methods.getJwtToken = function () {
-  return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this.id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_TIME,
   });
 };
 staffSchema.methods.getJwtToken = function () {
-  return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this.id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_TIME,
   });
 };
 
 //validating password - promise return true or false
 customerSchema.methods.isValidPassword = async function (enteredPassword) {
+  // console.log("entered Password: ", enteredPassword);
+  // console.log("this.Password: ", this.password);
   return await bcrypt.compare(enteredPassword, this.password);
 };
 adminSchema.methods.isValidPassword = async function (enteredPassword) {

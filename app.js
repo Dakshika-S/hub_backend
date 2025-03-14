@@ -10,7 +10,9 @@ app.get("/", (req, res) => {
 });
 
 const auth = require("./routes/auth");
+const package = require("./routes/package");
 
 app.use("/api/v1/", auth);
+app.use("/api/v1/", package);
 app.use(errorMiddleware);
 module.exports = app;

@@ -5,6 +5,7 @@ const packageSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please provide package title"],
+    unique: true,
   },
 
   serviceIncluded: [
@@ -21,3 +22,7 @@ const packageSchema = new mongoose.Schema({
     },
   ],
 });
+
+const Package = mongoose.model("Package", packageSchema);
+
+module.exports = Package;
