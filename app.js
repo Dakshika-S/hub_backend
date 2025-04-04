@@ -9,10 +9,14 @@ app.get("/", (req, res) => {
   res.send("Welcome to Laundry hub");
 });
 
-const auth = require("./routes/auth");
-const package = require("./routes/package");
+const auth = require("./routes/authRoute");
+const usrMgt = require("./routes/usrMgtRoute");
+const package = require("./routes/packageRoute");
+const orderRoute = require("./routes/orderRoute");
 
 app.use("/api/v1/", auth);
+app.use("/api/v1/", usrMgt);
 app.use("/api/v1/", package);
+app.use("/api/v1/", orderRoute);
 app.use(errorMiddleware);
 module.exports = app;

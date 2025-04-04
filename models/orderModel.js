@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const Joi = require("joi");
 
 const orderSchema = new mongoose.Schema({
   shippingInfo: {
@@ -31,17 +32,27 @@ const orderSchema = new mongoose.Schema({
   },
   selectedPackage: {
     type: mongoose.Schema.Types.ObjectId,
-    required: [true, "Please select a package"],
+    required: [true, "  package is required"],
   },
-  Items: {
-    type: String,
-    required: true,
-  },
-  quantity: {
+  itemsOrdered: [
+    {
+      item: {
+        type: String,
+        required: true,
+      },
+      count: {
+        type: Number,
+        required: true,
+        min: [1, "Items count must be at least 1"],
+      },
+    },
+  ],
+  totWeight: {
     type: Number,
     required: true,
+    min: [0, "total weight should be at leat 0 "],
   },
-  itemsPrice: {
+  itemsTotPrice: {
     type: Number,
     required: true,
     default: 0.0,
@@ -74,6 +85,7 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
     default: "Processing",
+    enum: ["Processing", "Shipped", "Delivered", "Cancelled"],
   },
   createdAt: {
     type: Date,
